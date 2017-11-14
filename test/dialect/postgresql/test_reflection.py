@@ -22,7 +22,7 @@ class ForeignTableReflectionTest(fixtures.TablesTest, AssertsExecutionResults):
     """Test reflection on foreign tables"""
 
     __requires__ = 'postgresql_test_dblink',
-    __only_on__ = 'postgresql >= 9.3'
+    __only_on__ = 'cockroachdb >= 1.0'
     __backend__ = True
 
     @classmethod
@@ -78,7 +78,7 @@ class MaterializedViewReflectionTest(
         fixtures.TablesTest, AssertsExecutionResults):
     """Test reflection on materialized views"""
 
-    __only_on__ = 'postgresql >= 9.3'
+    __only_on__ = 'cockroachdb >= 1.0'
     __backend__ = True
 
     @classmethod
@@ -166,7 +166,7 @@ class MaterializedViewReflectionTest(
 class DomainReflectionTest(fixtures.TestBase, AssertsExecutionResults):
     """Test PostgreSQL domains"""
 
-    __only_on__ = 'postgresql > 8.3'
+    __only_on__ = 'cockroachdb >= 1.0'
     __backend__ = True
 
     @classmethod
@@ -272,7 +272,7 @@ class DomainReflectionTest(fixtures.TestBase, AssertsExecutionResults):
 
 
 class ReflectionTest(fixtures.TestBase):
-    __only_on__ = 'postgresql'
+    __only_on__ = 'cockroachdb'
     __backend__ = True
 
     @testing.fails_if("postgresql < 8.4",
@@ -1057,7 +1057,6 @@ class ReflectionTest(fixtures.TestBase):
         })
 
 
-
 class CustomTypeReflectionTest(fixtures.TestBase):
 
     class CustomType(object):
@@ -1104,7 +1103,7 @@ class CustomTypeReflectionTest(fixtures.TestBase):
 
 
 class IntervalReflectionTest(fixtures.TestBase):
-    __only_on__ = 'postgresql'
+    __only_on__ = 'cockroachdb'
     __backend__ = True
 
     def test_interval_types(self):
@@ -1158,4 +1157,3 @@ class IntervalReflectionTest(fixtures.TestBase):
         assert isinstance(columns["data1"]["type"], INTERVAL)
         eq_(columns["data1"]["type"].fields, None)
         eq_(columns["data1"]["type"].precision, 6)
-
