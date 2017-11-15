@@ -172,16 +172,6 @@ class DomainReflectionTest(fixtures.TestBase, AssertsExecutionResults):
     @classmethod
     def setup_class(cls):
         con = testing.db.connect()
-        for ddl in \
-                'CREATE DOMAIN testdomain INTEGER NOT NULL DEFAULT 42', \
-                'CREATE DOMAIN test_schema.testdomain INTEGER DEFAULT 0', \
-                "CREATE TYPE testtype AS ENUM ('test')", \
-                'CREATE DOMAIN enumdomain AS testtype':
-            try:
-                con.execute(ddl)
-            except exc.DBAPIError as e:
-                if 'already exists' not in str(e):
-                    raise e
         con.execute('CREATE TABLE testtable (question integer, answer '
                     'testdomain)')
         con.execute('CREATE TABLE test_schema.testtable(question '
@@ -372,6 +362,7 @@ class ReflectionTest(fixtures.TestBase):
         eq_([c.name for c in t2.primary_key], ['t_id'])
 
     @testing.provide_metadata
+    @testing.fails_on("cockroachdb", "CREATE TEMPORARY TABLE not supported")
     def test_has_temporary_table(self):
         assert not testing.db.has_table("some_temp_table")
         user_tmp = Table(
@@ -586,6 +577,7 @@ class ReflectionTest(fixtures.TestBase):
             assert t2_schema_isp.c.sid.references(t1_schema_isp.c.id)
 
     @testing.provide_metadata
+    @testing.fails_on("cockroachdb", "Unsure if this is applicable")
     def test_cross_schema_reflection_seven(self):
         # test that the search path *is* taken into account
         # by default
@@ -746,6 +738,7 @@ class ReflectionTest(fixtures.TestBase):
 
     @testing.fails_if("postgresql < 8.2", "reloptions not supported")
     @testing.provide_metadata
+    @testing.fails_on("cockroachdb", "CREATE INDEX ... WITH is not supported")
     def test_index_reflection_with_storage_options(self):
         """reflect indexes with storage options set"""
 
@@ -774,8 +767,9 @@ class ReflectionTest(fixtures.TestBase):
             )
 
     @testing.provide_metadata
+    @testing.fails_on("cockroachdb", "GIN index not supported")
     def test_index_reflection_with_access_method(self):
-        """reflect indexes with storage options set"""
+        """reflect indexes with access options set"""
 
         metadata = self.metadata
 
@@ -799,6 +793,7 @@ class ReflectionTest(fixtures.TestBase):
             )
 
     @testing.provide_metadata
+    @testing.fails_on("cockroachdb", "ON DELETE and ON UPDATE options not supported")
     def test_foreign_key_option_inspection(self):
         metadata = self.metadata
         Table(

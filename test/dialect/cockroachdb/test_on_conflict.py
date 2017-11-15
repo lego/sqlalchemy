@@ -10,11 +10,21 @@ from sqlalchemy.dialects.postgresql import insert
 import sqlalchemy.dialects.cockroachdb
 
 
+@testing.fails_on(
+    'postgresql+zxjdbc',
+    'column "data" is of type uuid but expression '
+    'is of type character varying')
 class OnConflictTest(fixtures.TablesTest):
 
-    __only_on__ = 'cockroachdb >= 1.0',
+    __only_on__ = 'cockroachdb',
     __backend__ = True
     run_define_tables = 'each'
+
+    # CockroachDB currently does not support partial indexes, used for
+    # the set up of this text.
+    __skip_if__ = (
+        lambda: True,
+    )
 
     @classmethod
     def define_tables(cls, metadata):
@@ -370,6 +380,9 @@ class OnConflictTest(fixtures.TablesTest):
                 [(42, 'nameunique', 'name2@gmail.com', 'not')]
             )
 
+    @testing.fails_on(
+        'cockroachdb',
+        'partial index not supported')
     def test_on_conflict_do_update_exotic_targets_four(self):
         users = self.tables.users_xtra
 

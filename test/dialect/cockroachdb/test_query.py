@@ -647,6 +647,7 @@ class MatchTest(fixtures.TestBase, AssertsCompiledSQL):
     @testing.fails_on('postgresql+pygresql', 'uses pyformat')
     @testing.fails_on('postgresql+zxjdbc', 'uses qmark')
     @testing.fails_on('postgresql+psycopg2cffi', 'uses pyformat')
+    @testing.fails_on("cockroachdb", "full-text matching not supported: no operator @@ or to_tsvector")
     def test_expression_positional(self):
         self.assert_compile(matchtable.c.title.match('somstr'),
                             'matchtable.title @@ to_tsquery(%s)')
@@ -673,6 +674,7 @@ class MatchTest(fixtures.TestBase, AssertsCompiledSQL):
             matchtable.c.title.match('nutshells')).execute().fetchall()
         eq_([5], [r.id for r in results])
 
+    @testing.fails_on("cockroachdb", "full-text matching not supported: no operator @@ or to_tsvector")
     def test_or_match(self):
         results1 = matchtable.select().where(
             or_(

@@ -27,21 +27,6 @@ from sqlalchemy import dialects
 class DialectTest(fixtures.TestBase):
     """python-side dialect tests.  """
 
-    def test_version_parsing(self):
-
-        def mock_conn(res):
-            return Mock(
-                execute=Mock(return_value=Mock(scalar=Mock(return_value=res))))
-
-        dialect = cockroachdb.dialect()
-        for string, version in [
-                (
-                    '[PostgreSQL 9.2.4 ] VMware vFabric Postgres 9.2.4.0 '
-                    'release build 1080137', (1, 1, 2))
-        ]:
-            eq_(dialect._get_server_version_info(mock_conn(string)),
-                version)
-
     @testing.requires.psycopg2_compatibility
     def test_pg_dialect_use_native_unicode_from_config(self):
         config = {
@@ -249,6 +234,7 @@ class MiscBackendTest(
             eq_(r, exp)
 
     @testing.provide_metadata
+    @testing.fails_on("cockroachdb", "sequences not supported")
     def test_checksfor_sequence(self):
         meta1 = self.metadata
         seq = Sequence('fooseq')
