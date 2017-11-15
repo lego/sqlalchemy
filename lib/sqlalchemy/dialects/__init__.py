@@ -9,6 +9,7 @@ __all__ = (
     'firebird',
     'mssql',
     'mysql',
+    'cockroachdb',
     'oracle',
     'postgresql',
     'sqlite',

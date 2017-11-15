@@ -12,6 +12,7 @@ compatibility with pre 0.6 versions.
 from ..dialects.sqlite import base as sqlite
 from ..dialects.postgresql import base as postgresql
 postgres = postgresql
+from ..dialects.cockroachdb import base as cockroachdb
 from ..dialects.mysql import base as mysql
 from ..dialects.oracle import base as oracle
 from ..dialects.firebird import base as firebird
@@ -23,6 +24,7 @@ __all__ = (
     'firebird',
     'mssql',
     'mysql',
+    'cockroachdb',
     'postgresql',
     'sqlite',
     'oracle',

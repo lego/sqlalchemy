@@ -160,16 +160,13 @@ def _sqlite_post_configure_engine(url, engine, follower_ident):
 
 @_create_db.for_db("postgresql")
 def _pg_create_db(cfg, eng, ident):
-    template_db = cfg.options.postgresql_templatedb
-
     with eng.connect().execution_options(
             isolation_level="AUTOCOMMIT") as conn:
         try:
             _pg_drop_db(cfg, conn, ident)
         except Exception:
             pass
-        if not template_db:
-            template_db = conn.scalar("select current_database()")
+        template_db = conn.scalar("select current_database()")
         for attempt in range(3):
             try:
                 conn.execute(
@@ -186,6 +183,44 @@ def _pg_create_db(cfg, eng, ident):
         else:
             raise err
 
+@_create_db.for_db("cockroachdb")
+def _pg_create_db(cfg, eng, ident):
+    with eng.connect().execution_options(
+            isolation_level="AUTOCOMMIT") as conn:
+        try:
+            _pg_drop_db(cfg, conn, ident)
+        except Exception:
+            pass
+        template_db = conn.scalar("select current_database()")
+        for attempt in range(3):
+            try:
+                conn.execute(
+                    "CREATE DATABASE %s" % ident)
+            except exc.OperationalError as err:
+                if "accessed by other users" in str(err):
+                    # FIXME(joey): Fragment of postgres.
+                    log.info(
+                        "Waiting to create %s, URI %r, "
+                        "template DB %s is in use sleeping for .5",
+                        ident, eng.url, template_db)
+                    time.sleep(.5)
+            else:
+                break
+        else:
+            raise err
+
+
+@_drop_db.for_db("cockroachdb")
+def _pg_drop_db(cfg, eng, ident):
+    with eng.connect().execution_options(
+            isolation_level="AUTOCOMMIT") as conn:
+        conn.execute(
+            text(
+                "select pg_terminate_backend(pid) from pg_stat_activity "
+                "where usename=current_user and pid != pg_backend_pid() "
+                "and datname=:dname"
+            ), dname=ident)
+        conn.execute("DROP DATABASE %s" % ident)
 
 @_create_db.for_db("mysql")
 def _mysql_create_db(cfg, eng, ident):
